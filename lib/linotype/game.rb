@@ -73,6 +73,8 @@ module Linotype
     private :other_player
         
     def find_tiles(tile_coordinates)
+      puts tile_coordinates.inspect
+      return [] if tile_coordinates.empty?
       tile_coordinates.collect do |tile_coordinate|
         tile = tile_rows[tile_coordinate[:row]][tile_coordinate[:column]]
         raise ArgumentError, "The board does not have a tile at that location" unless tile
@@ -85,7 +87,6 @@ module Linotype
       @current_player = other_player
     end
     private :toggle_current_player
-    
     
     def uncovered_tiles
       covered_tiles(nil)
