@@ -9,9 +9,9 @@ Gem::Specification.new do |gem|
   gem.authors       = ["Sean Devine"]
   gem.email         = ["barelyknown@icloud.com"]
   gem.description   = <<-eos
-  linotype is a small program that implements that game mechanic of Letterpress for iOS by atebits software http://www.atebits.com/letterpress/ The program was written to support the automation of letterpress gameplay and to power command line or web-based versions of the game. It was inspired by a tweet by Andy Baio about cheating in letterpress. https://twitter.com/waxpancake/statuses/261966416507465728 The game uses the words file comes with Mac OS X, but any word file can be used.
+  linotype implements that game mechanic of Letterpress for iOS by atebits software. The program was written to support the automation of letterpress gameplay and to power command line or web-based versions of the game. It was inspired by a tweet by Andy Baio about cheating in letterpress. The game uses the words file that comes with Mac OS X, but any word file can be used.
   eos
-  gem.summary       = %q{Small ruby program that implements the game mechanic of the letterpress iOS game.}
+  gem.summary       = %q{The game mechanic of Letterpress for iOS, written in ruby.}
   gem.homepage      = "https://github.com/barelyknown/linotype"
 
   gem.files         = `git ls-files`.split($/)
