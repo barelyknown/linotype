@@ -46,6 +46,10 @@ module Linotype
     def score(player)
       covered_tiles(player).count
     end
+    
+    def potential_plays
+      @potential_plays ||= dictionary.words.select { |word| (word.chars.to_a - letters).empty? }
+    end
 
     def valid_moves
       @moves.select(&:valid?)
