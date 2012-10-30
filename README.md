@@ -52,6 +52,10 @@ Here's a basic rundown of the primary public methods:
           ]
         ] 
     
+    >   # Takes about 8 seconds on a laptop -- brute force solution
+    >   game.potential_plays
+    =>  ["WORD","MATCHES","FROM","DICTIONARY","IN","AN","ARRAY"]
+    
     >   game.play({ row: 3, column: 1 }, {row: 3, column: 0})
     =>  true
     
@@ -80,15 +84,14 @@ Here's a basic rundown of the primary public methods:
     >   game.winner
     =>  1
     
-
 ## Dictionary
-The default dictionary is based on the standard `words` file provide UNIX systems. On Mac OS X this file is located at `/usr/share/dict/words`. This probably isn't the right dictionary for the game, but it's something to start with. It probably makes sense to enable custom dictionaries at the game level by passing in an argument when the game is initialized. But, it'll be easy to extend from here.
+The default dictionary is based on the the [Internet Scrabble Club's TWL06 dictionary](http://www.isc.ro/en/commands/lists.html). Any dictionary can be used by replacing the contents of the `words.txt` file in the `/lib/linotype/dictionary` directory.
 
 ## Feature Ideas
 
 * Game board loading from string
 * Game board loading from iOS screen shot
-* Word suggestions
+* Word suggestions (faster)
 * Game simulation with strategy suggestion
 * One player command line game
 * Vowel/consonant ratio setting for random boards
