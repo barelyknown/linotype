@@ -92,10 +92,8 @@ The default dictionary is based on the the [Internet Scrabble Club's TWL06 dicti
 
 ## Feature Ideas
 
-* Game board loading from string
 * Game board loading from iOS screen shot
 * Word suggestions (faster)
-* Game simulation with strategy suggestion
 * One player command line game
 * Vowel/consonant ratio setting for random boards
 * Built in dictionaries for different languages or topics
