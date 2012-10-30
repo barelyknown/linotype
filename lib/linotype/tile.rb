@@ -19,6 +19,10 @@ module Linotype
       }
     end
     
+    def to_a
+      [row, column]
+    end
+    
     def game
       @board.game
     end

@@ -1,15 +1,37 @@
 module Linotype
   class Move
     
-    attr_reader :game, :player, :invalid_reason
+    attr_reader :game, :player, :invalid_reason, :score
     
     def initialize(game, player, tiles)
       @game = game
       @player = player
       @tiles = tiles
       calculate_valid
+      if valid?
+        calculate_scores(:before)
+        cover_tiles!
+        calculate_scores(:after)
+        calculate_net_scores
+        @game.toggle_current_player
+      end
+      @game.moves << self
     end
-       
+    
+    def score
+      @score ||= {}
+    end
+        
+    def calculate_scores(time)
+      score["defended_#{time}".to_sym] = @game.defended_tiles(player).count
+      score["covered_#{time}".to_sym] = @game.covered_tiles(player).count
+    end
+    
+    def calculate_net_scores
+      score[:defended] = score[:defended_after] - score[:defended_before]
+      score[:covered] = score[:covered_after] - score[:covered_before]
+    end
+           
     def valid?
       !!@valid
     end
@@ -27,7 +49,12 @@ module Linotype
     end
     
     def cover_tiles!
-      @tiles.each { |tile| tile.covered_by = @player unless tile.defended? }
+      @previously_defended_tiles = @tiles.select { |tile| tile.defended? }
+      (@tiles - @previously_defended_tiles).each { |tile| tile.covered_by = @player }
+    end
+    
+    def uncover_tiles!
+      (@tiles - @previously_defended_tiles).each { |tile| tile.covered_by = nil }
     end
     
     def to_hash
@@ -35,9 +62,11 @@ module Linotype
         player: game.player_number(@player),
         word: word,
         valid: valid?,
+        coordinates: @tiles.collect(&:to_a),
         invalid_reason: @invalid_reason,
         player_sequence: game.valid_moves.select { |move| move.player == @player }.index(self).to_i + 1,
-        total_sequence: game.valid_moves.index(self).to_i + 1
+        total_sequence: game.valid_moves.index(self).to_i + 1,
+        score: score
       }
     end
         

@@ -1,22 +1,89 @@
 module Linotype
   class Game
         
-    def initialize
-      @board = Board.new_random(self)
+    attr_accessor :moves
+    attr_reader :current_player
+
+    def initialize(args={})
+      @board = Board.new(self, tiles: create_tile_letter_array(args[:tiles]))
       @players = [Player.new, Player.new]
       @current_player = @players[0]
       @moves = []
     end
+    
+    def create_tile_letter_array(letter_arg)
+      case letter_arg
+      when nil
+        Board.new_random_letters
+      when Array
+        letter_arg
+      when String
+        square_size = Math.sqrt(letter_arg.length).ceil
+        letter_array = [[]]
+        letter_arg.each_char do |letter|
+          letter_array << [] if letter_array.last.size == square_size
+          letter_array.last << letter.upcase
+        end
+        letter_array
+      end
+    end
         
     def play(*tile_coordinates)
       tiles = find_tiles(tile_coordinates)
-      move = Move.new(self, @current_player, tiles)
-      if move.valid?
-        move.cover_tiles!
-        toggle_current_player
+      Move.new(self, @current_player, tiles).valid?
+    end
+    
+    def every_play_for_word(word)
+      tiles_per_letter = {}
+      word.chars.to_a.uniq.each do |unique_letter|
+        tiles_per_letter[unique_letter] = []
+        tile_rows.flatten.select { |tile| tile.letter == unique_letter }.each do |matching_tile|
+          tiles_per_letter[unique_letter] << matching_tile
+        end
       end
-      @moves << move
-      @current_player == move.player ? false : true
+      variations = tiles_per_letter.values.inject(1) { |vars, tiles| tiles.count * vars }
+      plays = []
+      v = 0
+      variations.times { plays << []; v += 1 }
+      word.chars.each do |letter|
+        play_number = 0
+        repetitions = variations / tiles_per_letter[letter].count
+        tiles_per_letter[letter].each do |tile|
+          repetitions.times do
+            plays[play_number] << tile
+            play_number += 1
+          end
+        end
+      end
+      plays.select { |play| play.uniq.count == play.count }
+    end
+    
+    def test_potential_plays
+      potential_moves = []
+      potential_plays.each do |word_to_test|
+        every_play_for_word(word_to_test).each do |tiles|
+          move = Move.new(self, @current_player, tiles)
+          potential_moves << move
+          undo_last_move!
+        end
+      end
+      potential_moves.collect(&:to_hash)
+    end
+    
+    def valid_potential_plays
+      test_potential_plays.select { |potential_play| potential_play[:valid] }
+    end
+    
+    def best_next_play
+      valid_potential_plays.sort { |a, b| b[:score][:defended] <=> a[:score][:defended] }.first
+    end
+    
+    def undo_last_move!
+      if (last_move = moves.pop) && last_move.valid?
+        last_move.uncover_tiles!
+        @current_player = other_player if last_move.valid?
+      end
+      moves.last.cover_tiles! if moves.any?  
     end
 
     def over?
@@ -35,10 +102,6 @@ module Linotype
       tile_rows.collect { |row| row.collect { |tile| tile.to_hash } }
     end
     
-    def moves
-      @moves.collect { |move| move.to_hash }
-    end
-
     def player_number(player)
       @players.index(player) + 1
     end
@@ -47,8 +110,27 @@ module Linotype
       covered_tiles(player).count
     end
     
-    def potential_plays
-      @potential_plays ||= dictionary.words.select { |word| (word.chars.to_a - letters).empty? }
+    def potential_plays(remaining_letters=letters)
+      @potential_plays ||= calc_potential_plays(remaining_letters)
+    end
+    
+    def calc_potential_plays(remaining_letters)
+      plays = []
+      letter_group = letters.group_by { |l| l }
+      dictionary.words.each do |word|
+        if word_match(letter_group, word)
+          plays << word
+        end
+      end
+      plays
+    end
+    
+    def word_match(letter_group, word)
+      word_letter_group = word.chars.to_a.group_by { |c| c }
+      word.each_char do |letter|
+        return false unless (letter_group[letter] && letter_group[letter].count >= word_letter_group[letter].count)
+      end
+      true
     end
 
     def valid_moves
@@ -74,13 +156,11 @@ module Linotype
     def other_player
       @players.index(@current_player) == 0 ? @players[1] : @players[0]
     end
-    private :other_player
         
     def find_tiles(tile_coordinates)
-      puts tile_coordinates.inspect
       return [] if tile_coordinates.empty?
       tile_coordinates.collect do |tile_coordinate|
-        tile = tile_rows[tile_coordinate[:row]][tile_coordinate[:column]]
+        tile = tile_rows[tile_coordinate[0]][tile_coordinate[1]]
         raise ArgumentError, "The board does not have a tile at that location" unless tile
         tile
       end
@@ -90,17 +170,19 @@ module Linotype
     def toggle_current_player
       @current_player = other_player
     end
-    private :toggle_current_player
     
     def uncovered_tiles
       covered_tiles(nil)
     end
     private :uncovered_tiles
     
+    def defended_tiles(player)
+      tile_rows.flatten.select { |tile| tile.covered_by == player && tile.defended? }
+    end
+    
     def covered_tiles(player)
       tile_rows.flatten.select { |tile| tile.covered_by == player }
     end
-    private :covered_tiles
     
     def two_passes_in_a_row?
       valid_moves.count >= 2 && valid_moves[-2,2].select { |move| move.pass? }.count == 2

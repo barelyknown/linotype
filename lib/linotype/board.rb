@@ -9,8 +9,12 @@ module Linotype
       @tiles = args[:tiles].collect { |row| row.collect { |tile|  Tile.new(self, tile) } }
     end
         
-    def self.new_random(game, rows=5, columns=5)
-      new(game, tiles: rows.times.collect { columns.times.collect { ('A'..'Z').to_a[rand(0..25)] } })
+    def self.new_random(game)
+      new(game, new_random_letters)
+    end
+    
+    def self.new_random_letters(rows=5, columns=5)
+      rows.times.collect { columns.times.collect { ('A'..'Z').to_a[rand(0..25)] } }
     end
 
     def row_count

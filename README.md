@@ -19,57 +19,60 @@ Here's a basic rundown of the primary public methods:
     >   game = Linotype::Game.new
     
     >   game.board
-    =>  [
-          [ {:letter=>"I", :row=>0, :column=>0, :covered_by=>nil, :defended=>false},
-            {:letter=>"E", :row=>0, :column=>1, :covered_by=>nil, :defended=>false},
-            {:letter=>"X", :row=>0, :column=>2, :covered_by=>nil, :defended=>false},
-            {:letter=>"A", :row=>0, :column=>3, :covered_by=>nil, :defended=>false},
-            {:letter=>"C", :row=>0, :column=>4, :covered_by=>nil, :defended=>false}
-          ], 
-          [ {:letter=>"R", :row=>1, :column=>0, :covered_by=>nil, :defended=>false},
-            {:letter=>"F", :row=>1, :column=>1, :covered_by=>nil, :defended=>false},
-            {:letter=>"D", :row=>1, :column=>2, :covered_by=>nil, :defended=>false},
-            {:letter=>"S", :row=>1, :column=>3, :covered_by=>nil, :defended=>false},
-            {:letter=>"B", :row=>1, :column=>4, :covered_by=>nil, :defended=>false}
-          ],
-          [ {:letter=>"B", :row=>2, :column=>0, :covered_by=>nil, :defended=>false},
-            {:letter=>"L", :row=>2, :column=>1, :covered_by=>nil, :defended=>false},
-            {:letter=>"K", :row=>2, :column=>2, :covered_by=>nil, :defended=>false},
-            {:letter=>"Q", :row=>2, :column=>3, :covered_by=>nil, :defended=>false},
-            {:letter=>"P", :row=>2, :column=>4, :covered_by=>nil, :defended=>false}
-          ],
-          [ {:letter=>"S", :row=>3, :column=>0, :covered_by=>nil, :defended=>false},
-            {:letter=>"O", :row=>3, :column=>1, :covered_by=>nil, :defended=>false},
-            {:letter=>"K", :row=>3, :column=>2, :covered_by=>nil, :defended=>false},
-            {:letter=>"P", :row=>3, :column=>3, :covered_by=>nil, :defended=>false},
-            {:letter=>"W", :row=>3, :column=>4, :covered_by=>nil, :defended=>false}
-          ],
-          [ {:letter=>"L", :row=>4, :column=>0, :covered_by=>nil, :defended=>false},
-            {:letter=>"U", :row=>4, :column=>1, :covered_by=>nil, :defended=>false},
-            {:letter=>"J", :row=>4, :column=>2, :covered_by=>nil, :defended=>false},
-            {:letter=>"Y", :row=>4, :column=>3, :covered_by=>nil, :defended=>false},
-            {:letter=>"D", :row=>4, :column=>4, :covered_by=>nil, :defended=>false}
-          ]
-        ] 
+    =>  [[{:letter=>"N", :row=>0, :column=>0, :covered_by=>1, :defended=>true},
+          {:letter=>"S", :row=>0, :column=>1, :covered_by=>1, :defended=>false},
+          {:letter=>"L", :row=>0, :column=>2, :covered_by=>nil, :defended=>false},
+          {:letter=>"K", :row=>0, :column=>3, :covered_by=>nil, :defended=>false},
+          {:letter=>"W", :row=>0, :column=>4, :covered_by=>nil, :defended=>false}],
+         [{:letter=>"T", :row=>1, :column=>0, :covered_by=>1, :defended=>true},
+          {:letter=>"P", :row=>1, :column=>1, :covered_by=>1, :defended=>false},
+          {:letter=>"Y", :row=>1, :column=>2, :covered_by=>nil, :defended=>false},
+          {:letter=>"E", :row=>1, :column=>3, :covered_by=>1, :defended=>false},
+          {:letter=>"E", :row=>1, :column=>4, :covered_by=>nil, :defended=>false}],
+         [{:letter=>"L", :row=>2, :column=>0, :covered_by=>1, :defended=>false},
+          {:letter=>"O", :row=>2, :column=>1, :covered_by=>nil, :defended=>false},
+          {:letter=>"L", :row=>2, :column=>2, :covered_by=>nil, :defended=>false},
+          {:letter=>"Z", :row=>2, :column=>3, :covered_by=>nil, :defended=>false},
+          {:letter=>"Z", :row=>2, :column=>4, :covered_by=>nil, :defended=>false}],
+         [{:letter=>"T", :row=>3, :column=>0, :covered_by=>nil, :defended=>false},
+          {:letter=>"B", :row=>3, :column=>1, :covered_by=>nil, :defended=>false},
+          {:letter=>"W", :row=>3, :column=>2, :covered_by=>nil, :defended=>false},
+          {:letter=>"M", :row=>3, :column=>3, :covered_by=>nil, :defended=>false},
+          {:letter=>"F", :row=>3, :column=>4, :covered_by=>nil, :defended=>false}],
+         [{:letter=>"B", :row=>4, :column=>0, :covered_by=>nil, :defended=>false},
+          {:letter=>"O", :row=>4, :column=>1, :covered_by=>nil, :defended=>false},
+          {:letter=>"F", :row=>4, :column=>2, :covered_by=>nil, :defended=>false},
+          {:letter=>"M", :row=>4, :column=>3, :covered_by=>nil, :defended=>false},
+          {:letter=>"V", :row=>4, :column=>4, :covered_by=>nil, :defended=>false}]] 
     
     >   # Takes about 8 seconds on a laptop -- brute force solution
     >   game.potential_plays
     =>  ["WORD","MATCHES","FROM","DICTIONARY","IN","AN","ARRAY"]
     
-    >   game.play({ row: 3, column: 1 }, {row: 3, column: 0})
+    >   next_play = game.best_next_play
+    
+    >   game.play(*next_play[:coordinates])
     =>  true
     
-    >   game.moves
-    =>  [{:player=>1, :word=>"OS", :valid=>true, :invalid_reason=>nil, :player_sequence=>1, :total_sequence=>1}
+    >   game.moves.last.to_hash
+    =>  { :player=>1,
+          :word=>"SPLENT",
+          :valid=>true,
+          :coordinates=>[[0, 1], [1, 1], [2, 0], [1, 3], [0, 0], [1, 0]],
+          :invalid_reason=>nil,
+          :player_sequence=>1,
+          :total_sequence=>1,
+          :score => {
+            :defended_before=>0,
+            :covered_before=>0,
+            :defended_after=>2,
+            :covered_after=>6,
+            :defended=>2,
+            :covered=>6}
+          }
 
     >   game.scores
     =>  {1=>2, 2=>0}
-    
-    >   game.play({ row: 1, column: 0 }, {row: 1, column: 1})
-    =>  false
-    
-    >   game.moves.last
-    =>  {:player=>2, :word=>"RF", :valid=>false, :invalid_reason=>"is not in dictionary", :player_sequence=>1, :total_sequence=>1} 
 
     #   pass by playing a nil move
     >   game.play
