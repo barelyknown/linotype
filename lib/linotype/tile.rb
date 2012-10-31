@@ -19,6 +19,10 @@ module Linotype
       }
     end
     
+    def board
+      @board
+    end
+    
     def to_a
       [row, column]
     end
@@ -37,6 +41,14 @@ module Linotype
     
     def column
       @column ||= @board.column(self)
+    end
+    
+    def edge?
+      (row == 0 || row == board.row_count - 1) || (column == 0 || column == board.column_count - 1)
+    end
+    
+    def corner?
+      (row == 0 || row == board.row_count - 1) && (column == 0 || column == board.column_count - 1)
     end
     
     def previous?(coordinate_type)

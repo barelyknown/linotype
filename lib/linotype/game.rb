@@ -2,11 +2,12 @@ module Linotype
   class Game
         
     attr_accessor :moves
-    attr_reader :current_player
+    attr_reader :current_player, :players
 
     def initialize(args={})
+      args = { player_one: Player.new, player_two: Player.new }.merge(args)
       @board = Board.new(self, tiles: create_tile_letter_array(args[:tiles]))
-      @players = [Player.new, Player.new]
+      @players = [args[:player_one], args[:player_two]]
       @current_player = @players[0]
       @moves = []
     end
@@ -27,7 +28,7 @@ module Linotype
         letter_array
       end
     end
-        
+            
     def play(*tile_coordinates)
       tiles = find_tiles(tile_coordinates)
       Move.new(self, @current_player, tiles).valid?
@@ -64,28 +65,22 @@ module Linotype
         every_play_for_word(word_to_test).each do |tiles|
           move = Move.new(self, @current_player, tiles)
           potential_moves << move
-          undo_last_move!
+          move.undo!
         end
       end
-      potential_moves.collect(&:to_hash)
+      potential_moves
     end
     
     def valid_potential_plays
-      test_potential_plays.select { |potential_play| potential_play[:valid] }
+      test_potential_plays.select { |potential_play| potential_play.valid? }
     end
     
     def best_next_play
-      valid_potential_plays.sort { |a, b| b[:score][:defended] <=> a[:score][:defended] }.first
+      valid_potential_plays.sort do |a, b|
+        current_player.strategy.score(b) <=> current_player.strategy.score(a)
+      end.first
     end
     
-    def undo_last_move!
-      if (last_move = moves.pop) && last_move.valid?
-        last_move.uncover_tiles!
-        @current_player = other_player if last_move.valid?
-      end
-      moves.last.cover_tiles! if moves.any?  
-    end
-
     def over?
       uncovered_tiles.empty? || two_passes_in_a_row?
     end
@@ -148,6 +143,10 @@ module Linotype
     def tile_rows
       @board.tiles
     end
+    
+    def all_tiles
+      tile_rows.flatten
+    end
 
     def letters
       @board.tiles.flatten.collect(&:letter)
@@ -172,22 +171,44 @@ module Linotype
     end
     
     def uncovered_tiles
-      covered_tiles(nil)
+      all_tiles.select { |tile| !tile.covered_by }
     end
     private :uncovered_tiles
     
     def defended_tiles(player)
-      tile_rows.flatten.select { |tile| tile.covered_by == player && tile.defended? }
+      tile_rows.flatten.select { |tile| player && tile.covered_by == player && tile.defended? }
     end
     
     def covered_tiles(player)
-      tile_rows.flatten.select { |tile| tile.covered_by == player }
+      tile_rows.flatten.select { |tile| player && tile.covered_by == player }
+    end
+    
+    def edge_tiles(player)
+      tile_rows.flatten.select { |tile| player && tile.edge? && tile.covered_by == player }
+    end
+    
+    def corner_tiles(player)
+      tile_rows.flatten.select { |tile| player && tile.corner? && tile.covered_by == player }
     end
     
     def two_passes_in_a_row?
       valid_moves.count >= 2 && valid_moves[-2,2].select { |move| move.pass? }.count == 2
     end
     private :two_passes_in_a_row?
+    
+    def print_board
+      tile_rows.each do |row|
+        r = ""
+        row.each do |tile|
+          r << "#{tile.letter}#{tile.covered_by ? player_number(tile.covered_by) : ' '} "
+        end
+        puts r
+      end
+    end
+    
+    def print_scores
+      players.each { |player| puts "Player #{player_number(player)}: #{covered_tiles(player).count}" }
+    end
     
   end
 end

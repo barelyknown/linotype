@@ -1,35 +1,56 @@
 module Linotype
   class Move
     
-    attr_reader :game, :player, :invalid_reason, :score
+    attr_reader :game, :invalid_reason, :score, :tiles
+    attr_accessor :player, :previous_tile_values
     
     def initialize(game, player, tiles)
       @game = game
-      @player = player
+      self.player = player
       @tiles = tiles
+      set_previous_tile_values
       calculate_valid
       if valid?
         calculate_scores(:before)
+        @game.moves << self
         cover_tiles!
         calculate_scores(:after)
         calculate_net_scores
         @game.toggle_current_player
+      else
+        @game.moves << self
       end
-      @game.moves << self
     end
     
     def score
       @score ||= {}
     end
+    
+    def undo!
+      tiles.each { |tile| tile.covered_by = previous_tile_values[tile][:covered_by] }
+      game.moves.delete(self)
+      game.toggle_current_player if valid?
+    end
+    
+    def set_previous_tile_values
+      self.previous_tile_values = {}
+      tiles.each do |tile|
+        self.previous_tile_values[tile] = { covered_by: tile.covered_by }
+      end
+    end
         
     def calculate_scores(time)
-      score["defended_#{time}".to_sym] = @game.defended_tiles(player).count
-      score["covered_#{time}".to_sym] = @game.covered_tiles(player).count
+      self.score["defended_#{time}".to_sym] = @game.defended_tiles(player).count
+      self.score["covered_#{time}".to_sym] = @game.covered_tiles(player).count
+      self.score["edges_#{time}".to_sym] = @game.edge_tiles(player).count
+      self.score["corners_#{time}".to_sym] = @game.corner_tiles(player).count
     end
     
     def calculate_net_scores
-      score[:defended] = score[:defended_after] - score[:defended_before]
-      score[:covered] = score[:covered_after] - score[:covered_before]
+      self.score[:defended] = score[:defended_after] - score[:defended_before]
+      self.score[:covered] = score[:covered_after] - score[:covered_before]
+      self.score[:edges] = score[:edges_after] - score[:edges_before]
+      self.score[:corners] = score[:corners_after] - score[:corners_before]
     end
            
     def valid?

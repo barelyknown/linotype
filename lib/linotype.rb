@@ -4,8 +4,7 @@ require "linotype/board"
 require "linotype/move"
 require "linotype/player"
 require "linotype/tile"
+require "linotype/strategy"
+require "linotype/simulator"
 require "linotype/dictionary/dictionary"
 
-module Linotype
-      
-end
