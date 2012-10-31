@@ -44,6 +44,8 @@ module Linotype
       self.score["covered_#{time}".to_sym] = @game.covered_tiles(player).count
       self.score["edges_#{time}".to_sym] = @game.edge_tiles(player).count
       self.score["corners_#{time}".to_sym] = @game.corner_tiles(player).count
+      self.score["corners_defended_#{time}".to_sym] = (@game.defended_tiles(player) & @game.corner_tiles(player)).count
+      self.score["remaining_uncovered_#{time}".to_sym] = @game.uncovered_tiles.count
     end
     
     def calculate_net_scores
@@ -51,6 +53,7 @@ module Linotype
       self.score[:covered] = score[:covered_after] - score[:covered_before]
       self.score[:edges] = score[:edges_after] - score[:edges_before]
       self.score[:corners] = score[:corners_after] - score[:corners_before]
+      self.score[:corners_defended] = score[:corners_defended_after] - score[:corners_defended_before]
     end
            
     def valid?

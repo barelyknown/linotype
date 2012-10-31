@@ -21,8 +21,9 @@ module Linotype
         end
         game.print_board
         game.print_scores
+        puts "---------------"
       end
-      game
+      puts "Game Over!"
     end
     
   end

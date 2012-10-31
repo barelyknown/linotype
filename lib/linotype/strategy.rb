@@ -1,8 +1,17 @@
 module Linotype
   class Strategy
     
-    LETTERPRESS_FAN_HEURISTIC = ->(move) do
-      move.score[:covered] + move.score[:defended] + move.score[:edges] + move.score[:corners]
+    EDGE_AND_CORNER = ->(move) do
+      score = move.score[:covered] + move.score[:defended] + move.score[:edges] + move.score[:corners]
+      score += 100000 if move.score[:remaining_uncovered_after] == 0
+      score
+    end
+    
+    CORNER_LOVER = ->(move) do
+      score = move.score[:covered] + move.score[:defended] + move.score[:edges] + move.score[:corners]
+      score += 10 if (move.score[:corners_defended_before] == 0 && move.score[:corners_defended_after] > 0)
+      score += 100000 if move.score[:remaining_uncovered_after] == 0
+      score
     end
     
     MAX_SIX_LETTERS = ->(move) do
@@ -25,6 +34,10 @@ module Linotype
     
     def score(move)
       scoring_algorithm.call move
+    end
+    
+    def self.predefined(strategy_name)
+      new(const_get(strategy_name))
     end
     
   end

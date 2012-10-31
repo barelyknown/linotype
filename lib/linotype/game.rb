@@ -173,8 +173,7 @@ module Linotype
     def uncovered_tiles
       all_tiles.select { |tile| !tile.covered_by }
     end
-    private :uncovered_tiles
-    
+        
     def defended_tiles(player)
       tile_rows.flatten.select { |tile| player && tile.covered_by == player && tile.defended? }
     end
