@@ -3,14 +3,14 @@ module Linotype
     
     EDGE_AND_CORNER = ->(move) do
       score = move.score[:covered] + move.score[:defended] + move.score[:edges] + move.score[:corners]
-      score += 100000 if move.score[:remaining_uncovered_after] == 0
+      score += 100000 if move.winning_move?
       score
     end
     
     CORNER_LOVER = ->(move) do
       score = move.score[:covered] + move.score[:defended] + move.score[:edges] + move.score[:corners]
-      score += 10 if (move.score[:corners_defended_before] == 0 && move.score[:corners_defended_after] > 0)
-      score += 100000 if move.score[:remaining_uncovered_after] == 0
+      score += 10 if move.first_covered_corner?
+      score += 100000 if move.winning_move?
       score
     end
     

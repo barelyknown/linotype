@@ -132,6 +132,14 @@ module Linotype
     def prefix_of_previous_word?
       game.valid_moves.find { |move| move.word =~ /\A#{word}/ }
     end
-                
+    
+    def winning_move?
+      score[:remaining_uncovered_after] == 0 && score[:covered_after] >= game.all_tiles.count
+    end
+    
+    def first_covered_corner?
+      score[:corners_defended_before] == 0 && score[:corners_defended_after] > 0
+    end
+
   end
 end

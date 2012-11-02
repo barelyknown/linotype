@@ -61,7 +61,7 @@ module Linotype
     
     def test_potential_plays
       potential_moves = []
-      potential_plays.each do |word_to_test|
+      remaining_plays.each do |word_to_test|
         every_play_for_word(word_to_test).each do |tiles|
           move = Move.new(self, @current_player, tiles)
           potential_moves << move
@@ -69,6 +69,14 @@ module Linotype
         end
       end
       potential_moves
+    end
+    
+    def previously_played_words
+      moves.collect(&:word)
+    end
+    
+    def remaining_plays
+      potential_plays - previously_played_words
     end
     
     def valid_potential_plays
